@@ -38,4 +38,71 @@
  */
 export function iplPointsTable(matches) {
   // Your code here
+  if (!matches || !Array.isArray(matches)) return [];
+  let acc = {};
+  matches.forEach((match) => {
+    const result = match.result.trim().toLowerCase();
+    const team1 = match.team1;
+    const team2 = match.team2;
+
+    const isTie = result === "tie";
+    const hasNoResult = result === "no_result";
+
+    const isTeam1Winner =
+      !isTie &&
+      !hasNoResult &&
+      match.winner.trim().toLowerCase() === team1.trim().toLowerCase();
+
+    ensureTeam(acc, team1);
+    ensureTeam(acc, team2);
+
+    acc[team1].played += 1;
+    acc[team2].played += 1;
+
+    if (isTie) {
+      acc[team1].tied += 1;
+      acc[team2].tied += 1;
+
+      acc[team2].points += 1;
+      acc[team1].points += 1;
+    } else if (hasNoResult) {
+      acc[team1].noResult += 1;
+      acc[team2].noResult += 1;
+
+      acc[team2].points += 1;
+      acc[team1].points += 1;
+    } else if (isTeam1Winner) {
+      acc[team1].won += 1;
+      acc[team2].lost += 1;
+
+      acc[team1].points += 2;
+    } else {
+      acc[team1].lost += 1;
+      acc[team2].won += 1;
+
+      acc[team2].points += 2;
+    }
+  });
+
+  return Object.values(acc).sort((a, b) => {
+    if (b.points === a.points) {
+      return a.team.localeCompare(b.team);
+    }
+
+    return b.points - a.points;
+  });
+}
+
+function ensureTeam(acc, team) {
+  if (!acc[team]) {
+    acc[team] = {
+      team,
+      played: 0,
+      won: 0,
+      lost: 0,
+      tied: 0,
+      noResult: 0,
+      points: 0,
+    };
+  }
 }
